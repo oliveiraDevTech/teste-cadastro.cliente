@@ -1,0 +1,17 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Net.Mail;
+global using System.Text;
+global using System.Text.RegularExpressions;
+global using System.Threading.Tasks;
+global using Core.Infra.Caching;
+global using Core.Infra.Email;
+global using Core.Infra.Extensions;
+global using Core.Infra.Logging;
+global using Core.Infra.Repositories;
+global using Microsoft.Extensions.Caching.Distributed;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;

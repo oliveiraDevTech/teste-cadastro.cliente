@@ -1,0 +1,14 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Text;
+global using System.Text.Json;
+global using System.Threading.Tasks;
+global using Driven.RabbitMQ.Events;
+global using Driven.RabbitMQ.Interfaces;
+global using Driven.RabbitMQ.Services;
+global using Driven.RabbitMQ.Settings;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Options;
+global using RabbitMQ.Client;
+global using RabbitMQ.Client.Events;

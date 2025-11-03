@@ -1,0 +1,103 @@
+# Auto detect text files and normalize line endings to LF
+* text=auto
+
+# Git configuration files
+.gitignore export-ignore
+.gitattributes export-ignore
+.editorconfig export-ignore
+
+# Documentation
+*.md text eol=lf
+*.txt text eol=lf
+README.md text eol=lf
+LICENSE text eol=lf
+CHANGELOG.md text eol=lf
+
+# C# files
+*.cs text eol=lf diff=csharp
+*.csproj text eol=lf merge=union
+*.sln text eol=lf merge=union
+*.vb text eol=lf diff=vb
+*.vbproj text eol=lf merge=union
+
+# Solution file
+*.sln text eol=lf merge=union
+
+# Config files
+*.json text eol=lf
+*.xml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.config text eol=lf
+appsettings*.json text eol=lf
+web.config text eol=lf
+
+# Scripts
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Visual Studio files
+*.sln text eol=lf merge=union
+*.csproj text eol=lf merge=union
+*.vcxproj text eol=lf merge=union
+*.vcxproj.filters text eol=lf
+*.sln.DotSettings text eol=lf
+*.DotSettings text eol=lf
+
+# Build files
+*.nuspec text eol=lf
+packages.config text eol=lf
+Directory.Build.props text eol=lf
+Directory.Build.targets text eol=lf
+.editorconfig text eol=lf
+
+# Binary files
+*.dll binary
+*.exe binary
+*.so binary
+*.dylib binary
+*.bin binary
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+
+# Image files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text eol=lf
+
+# Document files
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.pptx binary
+*.zip binary
+*.gz binary
+
+# Ensure end-of-line normalization
+*.sql text eol=lf
+*.linq text eol=lf
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+
+# Archive files
+*.tar binary
+*.tgz binary
+*.rar binary
+*.7z binary
+
+# Exclude files from export (release) archive
+.github export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
+.editorconfig export-ignore
+*.md export-ignore
+.vscode export-ignore
+.idea export-ignore
+Test.XUnit export-ignore

@@ -1,0 +1,46 @@
+# Code Owners file
+# This file defines who should be requested for pull request reviews
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+* @dev-team
+
+# Core domain layer
+Core.Domain/** @dev-team @architects
+
+# Application layer (services & DTOs)
+Core.Application/** @dev-team @backend-team
+
+# Infrastructure (logging, caching, email)
+Core.Infra/** @dev-team @devops
+
+# Database layer
+Driven.SqlLite/** @dev-team @dba
+
+# Messaging layer
+Driven.RabbitMQ/** @dev-team @devops
+
+# API layer
+Driving.Api/** @dev-team @backend-team
+
+# Tests
+Test.XUnit/** @qa-team @dev-team
+
+# Configuration files
+*.json @dev-team @devops
+*.yaml @dev-team @devops
+*.yml @dev-team @devops
+Dockerfile @dev-team @devops
+docker-compose.yml @dev-team @devops
+
+# Documentation
+README.md @dev-team @documentation
+CHANGELOG.md @dev-team
+.github/** @dev-team
+docs/** @dev-team @documentation
+
+# Project files
+*.csproj @dev-team
+*.sln @dev-team
+.editorconfig @dev-team
+.gitignore @dev-team

@@ -1,0 +1,175 @@
+# EditorConfig helps maintain consistent coding styles across multiple IDEs and editors
+# editorconfig.org
+
+# Top-most file - remove the line below if you want to extend parent directories
+root = true
+
+# All files
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C# files
+[*.cs]
+indent_size = 4
+indent_style = space
+tab_width = 4
+
+# Naming conventions
+[*.cs]
+
+# Define naming style for public members
+csharp_naming_style.public_style.required_prefix =
+csharp_naming_style.public_style.required_suffix =
+csharp_naming_style.public_style.word_separator =
+csharp_naming_style.public_style.capitalization = pascal_case
+
+# Define naming style for private members
+csharp_naming_style.private_style.required_prefix = _
+csharp_naming_style.private_style.required_suffix =
+csharp_naming_style.private_style.word_separator =
+csharp_naming_style.private_style.capitalization = camel_case
+
+# Public properties
+dotnet_naming_rule.public_properties_rule.severity = suggestion
+dotnet_naming_rule.public_properties_rule.symbols = public_properties
+dotnet_naming_rule.public_properties_rule.style = public_style
+dotnet_naming_symbols.public_properties.applicable_kinds = property
+dotnet_naming_symbols.public_properties.applicable_accessibilities = public
+
+# Private fields
+dotnet_naming_rule.private_fields_rule.severity = suggestion
+dotnet_naming_rule.private_fields_rule.symbols = private_fields
+dotnet_naming_rule.private_fields_rule.style = private_style
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+# Constants
+dotnet_naming_rule.constants_rule.severity = suggestion
+dotnet_naming_rule.constants_rule.symbols = constants
+dotnet_naming_rule.constants_rule.style = upper_case_style
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.applicable_accessibilities = public,private,protected,internal,protected_internal
+dotnet_naming_symbols.constants.required_modifiers = const
+csharp_naming_style.upper_case_style.capitalization = all_upper
+csharp_naming_style.upper_case_style.word_separator = _
+
+# Language Keywords and Type Names
+[*.cs]
+csharp_style_var_for_built_in_types = false:silent
+csharp_style_var_when_type_is_apparent = true:silent
+csharp_style_var_elsewhere = false:silent
+
+# Expression-bodied members
+csharp_style_expression_bodied_methods = true:silent
+csharp_style_expression_bodied_constructors = false:silent
+csharp_style_expression_bodied_operators = true:silent
+csharp_style_expression_bodied_properties = true:silent
+csharp_style_expression_bodied_indexers = true:silent
+csharp_style_expression_bodied_accessors = true:silent
+
+# Pattern matching preferences
+csharp_style_pattern_matching_over_is_with_cast_check = true:silent
+csharp_style_pattern_matching_over_as_with_null_check = true:silent
+
+# Inlined variable declarations
+csharp_style_inlined_variable_declaration = true:silent
+
+# Null-checking preferences
+csharp_style_throw_expression = true:silent
+csharp_style_conditional_delegate_call = true:silent
+
+# Code block preferences
+csharp_prefer_braces = true:silent
+csharp_prefer_simple_using_statement = true:silent
+
+# Namespace declarations
+csharp_style_namespace_declarations = file_scoped:silent
+
+# Indentation preferences
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_indent_labels = flush_left
+csharp_indent_block_contents = true
+
+# Wrapping preferences
+csharp_preserve_single_line_statements = false
+csharp_preserve_single_line_blocks = true
+
+# Spacing preferences
+csharp_space_after_cast = false
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+csharp_space_between_parentheses = false
+
+# New line preferences
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+csharp_new_line_between_query_expression_clauses = true
+
+# .NET coding conventions
+[*.cs]
+
+# Dotnet code quality rules
+dotnet_code_quality_unused_parameters = all:warning
+
+# this. preferences
+dotnet_style_qualification_for_field = false:silent
+dotnet_style_qualification_for_property = false:silent
+dotnet_style_qualification_for_method = false:silent
+dotnet_style_qualification_for_event = false:silent
+
+# Language keywords vs BCL types preferences
+dotnet_style_predefined_type_for_locals_parameters_members = true:silent
+dotnet_style_predefined_type_for_member_access = true:silent
+
+# Parentheses preferences
+dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:silent
+dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:silent
+dotnet_style_parentheses_in_other_operators = never_if_unnecessary:silent
+dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:silent
+
+# Modifier preferences
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:silent
+dotnet_style_readonly_field = true:warning
+
+# Expression-level preferences
+dotnet_style_object_initializer = true:silent
+dotnet_style_collection_initializer = true:silent
+dotnet_style_explicit_tuple_names = true:silent
+dotnet_style_prefer_inferred_tuple_names = true:silent
+dotnet_style_prefer_inferred_anonymous_type_member_names = true:silent
+dotnet_style_prefer_auto_properties = true:silent
+dotnet_style_prefer_conditional_expression_over_assignment = true:silent
+dotnet_style_prefer_conditional_expression_over_return = true:silent
+dotnet_style_prefer_null_coalescing = true:silent
+
+# JSON files
+[*.json]
+indent_size = 2
+indent_style = space
+
+# XML project files
+[*.{csproj,vbproj,proj,projitems,shproj}]
+indent_size = 2
+indent_style = space
+
+# YAML files
+[*.{yml,yaml}]
+indent_size = 2
+indent_style = space
+
+# TOML files
+[*.toml]
+indent_size = 2
+indent_style = space
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false
