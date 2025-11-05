@@ -175,11 +175,11 @@ try
         {
             Console.WriteLine("🔄 Criando usuário padrão...");
             
-            // Criar usuário padrão: user / password
+            // Criar usuário padrão: user / Password123
             var usuario = Core.Domain.Entities.Usuario.Criar(
                 login: "user",
                 email: "user@sistema.com",
-                senhaPlana: "password",  // Esta senha será hash-ada automaticamente pelo método Criar
+                senhaPlana: "Password123",  // Senha forte: contém maiúsculas, minúsculas e números
                 nomeCompleto: "Usuário Padrão",
                 telefone: "11999999999"
             );
@@ -189,7 +189,7 @@ try
             
             Console.WriteLine("✅ Usuário padrão criado com sucesso!");
             Console.WriteLine("   Login: user");
-            Console.WriteLine("   Senha: password");
+            Console.WriteLine("   Senha: Password123");
         }
         else
         {
