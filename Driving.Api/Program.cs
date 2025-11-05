@@ -179,7 +179,7 @@ try
             var usuario = Core.Domain.Entities.Usuario.Criar(
                 login: "user",
                 email: "user@sistema.com",
-                senha: "password",  // Esta senha será hash-ada automaticamente pelo método Criar
+                senhaPlana: "password",  // Esta senha será hash-ada automaticamente pelo método Criar
                 nomeCompleto: "Usuário Padrão",
                 telefone: "11999999999"
             );
