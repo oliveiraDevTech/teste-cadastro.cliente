@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
 using Core.Application;
 using Driven.SqlLite;
 using Driven.SqlLite.Data;
@@ -57,7 +58,23 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Obter JWT Secret das variáveis de ambiente ou usar padrão para desenvolvimento
-var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "sua_chave_super_secreta_com_minimo_32_caracteres_para_producao";
+var jwtSecret = builder.Configuration["Jwt:Secret"]
+    ?? builder.Configuration["JWT_SECRET"]
+    ?? "sua_chave_super_secreta_com_minimo_32_caracteres_para_producao";
+
+// Obter outras configurações JWT
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]
+    ?? builder.Configuration["JWT_ISSUER"]
+    ?? "CadastroClientesApi";
+
+var jwtAudience = builder.Configuration["Jwt:Audience"]
+    ?? builder.Configuration["JWT_AUDIENCE"]
+    ?? "CadastroClientesApp";
+
+var jwtExpirationMinutes = int.TryParse(
+    builder.Configuration["Jwt:ExpirationMinutes"]
+    ?? builder.Configuration["JWT_EXPIRATION"],
+    out var expiration) ? expiration : 60;
 
 // Configurar autenticação JWT
 builder.Services.AddAuthentication(options =>
@@ -72,9 +89,9 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSecret)),
         ValidateIssuer = true,
-        ValidIssuer = "CadastroClientesApi",
+        ValidIssuer = jwtIssuer,
         ValidateAudience = true,
-        ValidAudience = "CadastroClientesApp",
+        ValidAudience = jwtAudience,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
@@ -92,7 +109,7 @@ builder.Services.AddCors(options =>
 });
 
 // Injeção de dependências - Camada de Aplicação
-builder.Services.AddApplicationServices(jwtSecret, "CadastroClientesApi", "CadastroClientesApp", 60);
+builder.Services.AddApplicationServices(jwtSecret, jwtIssuer, jwtAudience, jwtExpirationMinutes);
 
 // Injeção de dependências - Camada de Dados
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -138,10 +155,22 @@ app.MapControllers();
 
 // ========== APLICAR MIGRATIONS E CRIAR BANCO AUTOMATICAMENTE ==========
 
-using (var scope = app.Services.CreateScope())
+try
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    dbContext.Database.EnsureCreated();
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        // Aplicar migrations pendentes automaticamente
+        Console.WriteLine("🔄 Aplicando migrations do banco de dados...");
+        dbContext.Database.Migrate();
+        Console.WriteLine("✅ Migrations aplicadas com sucesso!");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"❌ Erro ao aplicar migrations: {ex.Message}");
+    throw;
 }
 
 // ========== INICIALIZAR RABBITMQ (COM FALLBACK) ==========
@@ -153,6 +182,34 @@ try
     if (messageBus?.TryConnect() ?? false)
     {
         Console.WriteLine("✅ RabbitMQ conectado com sucesso");
+
+        // ========== INICIALIZAR CONSUMIDORES DE EVENTOS ==========
+
+        var subscriber = app.Services.GetRequiredService<IMessageSubscriber>();
+        var analiseCreditoHandler = app.Services.GetRequiredService<Core.Application.Handlers.AnaliseCartaoCreditoCompleteEventHandler>();
+        var logger = app.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>();
+        
+        // Obter configurações do RabbitMQ incluindo nomes das filas
+        var rabbitMQSettings = app.Configuration.GetSection("RabbitMQ").Get<Driven.RabbitMQ.Settings.RabbitMQSettings>();
+        var queueName = rabbitMQSettings?.Queues?.AnaliseCreditoComplete ?? "analise.credito.complete";
+
+        // Subscrever ao evento de análise de crédito completa
+        try
+        {
+            await subscriber.SubscribeAsync<Driven.RabbitMQ.Events.AnaliseCartaoCreditoCompleteEvent>(
+                queueName: queueName,
+                handler: async (evento) =>
+                {
+                    logger.LogInformation("Evento AnaliseCartaoCreditoCompleteEvent recebido para cliente {ClienteId}", evento.ClienteId);
+                    await analiseCreditoHandler.HandleAsync(evento);
+                });
+
+            Console.WriteLine("✅ Consumer de AnaliseCartaoCreditoCompleteEvent inicializado");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao inicializar consumer de AnaliseCartaoCreditoCompleteEvent");
+        }
     }
 }
 catch (InvalidOperationException ex)

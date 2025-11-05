@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # Aplicação Principal
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cadastro-clientes-api
+    ports:
+      - "5000:5000"
+    environment:
+      # Ambiente e URLs
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:5000
+
+      # Banco de Dados
+      ConnectionStrings__DefaultConnection: "Data Source=/app/data/cliente.db;"
+
+      # JWT Configuration
+      Jwt__Secret: "${JWT_SECRET:-sua_chave_super_secreta_com_minimo_32_caracteres_para_producao}"
+      Jwt__Issuer: "${JWT_ISSUER:-CadastroClientesApi}"
+      Jwt__Audience: "${JWT_AUDIENCE:-CadastroClientesApp}"
+      Jwt__ExpirationMinutes: "${JWT_EXPIRATION:-60}"
+
+      # RabbitMQ Configuration
+      RabbitMQ__HostName: "${RABBITMQ_HOST:-rabbitmq}"
+      RabbitMQ__Port: "${RABBITMQ_PORT:-5672}"
+      RabbitMQ__UserName: "${RABBITMQ_USER:-guest}"
+      RabbitMQ__Password: "${RABBITMQ_PASSWORD:-guest}"
+      RabbitMQ__VirtualHost: "${RABBITMQ_VHOST:-/}"
+
+      # Logging
+      Logging__LogLevel__Default: Information
+      Logging__LogLevel__Microsoft.AspNetCore: Warning
+      Logging__LogLevel__Microsoft.EntityFrameworkCore: Information
+
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+
+    depends_on:
+      - rabbitmq
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+
+    networks:
+      - cadastro_network
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:4.0-management-alpine
+    container_name: cadastro-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER:-guest}"
+      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASSWORD:-guest}"
+      RABBITMQ_DEFAULT_VHOST: "${RABBITMQ_VHOST:-/}"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - cadastro_network
+
+volumes:
+  rabbitmq_data:
+    driver: local
+
+networks:
+  cadastro_network:
+    driver: bridge

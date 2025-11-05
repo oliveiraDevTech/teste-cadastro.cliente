@@ -6,12 +6,31 @@ namespace Test.XUnit.Application;
 public class ClienteServiceTests
 {
     private readonly Mock<IClienteRepository> _mockRepository;
+    private readonly Mock<Driven.RabbitMQ.Interfaces.IMessagePublisher> _mockMessagePublisher;
+    private readonly Mock<Microsoft.Extensions.Logging.ILogger<ClienteService>> _mockLogger;
+    private readonly Mock<Microsoft.Extensions.Options.IOptions<Driven.RabbitMQ.Settings.RabbitMQSettings>> _mockRabbitMQSettings;
     private readonly ClienteService _service;
 
     public ClienteServiceTests()
     {
         _mockRepository = new Mock<IClienteRepository>();
-        _service = new ClienteService(_mockRepository.Object);
+        _mockMessagePublisher = new Mock<Driven.RabbitMQ.Interfaces.IMessagePublisher>();
+        _mockLogger = new Mock<Microsoft.Extensions.Logging.ILogger<ClienteService>>();
+        
+        // Configurar mock das settings do RabbitMQ
+        var rabbitMQSettings = new Driven.RabbitMQ.Settings.RabbitMQSettings
+        {
+            Queues = new Driven.RabbitMQ.Settings.RabbitMQQueuesSettings
+            {
+                ClienteCadastrado = "cliente.cadastrado",
+                AnaliseCreditoComplete = "analise.credito.complete",
+                CartaoEmissaoPedido = "cartao.emissao.pedido"
+            }
+        };
+        _mockRabbitMQSettings = new Mock<Microsoft.Extensions.Options.IOptions<Driven.RabbitMQ.Settings.RabbitMQSettings>>();
+        _mockRabbitMQSettings.Setup(m => m.Value).Returns(rabbitMQSettings);
+        
+        _service = new ClienteService(_mockRepository.Object, _mockMessagePublisher.Object, _mockLogger.Object, _mockRabbitMQSettings.Object);
     }
 
     #region ObterPorIdAsync Tests
@@ -107,7 +126,7 @@ public class ClienteServiceTests
         // Assert
         resultado.Sucesso.Should().BeTrue();
         resultado.Dados.Should().NotBeNull();
-        resultado.Dados.Itens.Should().HaveCount(2);
+        resultado.Dados!.Itens.Should().HaveCount(2);
         resultado.Dados.PaginaAtual.Should().Be(1);
     }
 
@@ -146,11 +165,11 @@ public class ClienteServiceTests
             Nome = "João Silva",
             Email = "joao@example.com",
             Telefone = "11987654321",
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = "SP",
-            Cep = "01234-567"
+            Cep = "01234567"
         };
 
         var clienteResponseDto = new ClienteResponseDto
@@ -176,7 +195,7 @@ public class ClienteServiceTests
         // Assert
         resultado.Sucesso.Should().BeTrue();
         resultado.Dados.Should().NotBeNull();
-        resultado.Dados.Id.Should().NotBe(Guid.Empty);
+        resultado.Dados!.Id.Should().NotBe(Guid.Empty);
     }
 
     [Fact]
@@ -188,11 +207,11 @@ public class ClienteServiceTests
             Nome = "João Silva",
             Email = "joao@example.com",
             Telefone = "11987654321",
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = "SP",
-            Cep = "01234-567"
+            Cep = "01234567"
         };
 
         _mockRepository.Setup(r => r.EmailJaRegistradoAsync(clienteCreateDto.Email, null))
@@ -215,11 +234,11 @@ public class ClienteServiceTests
             Nome = "João Silva",
             Email = "joao@example.com",
             Telefone = "11987654321",
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = "SP",
-            Cep = "01234-567"
+            Cep = "01234567"
         };
 
         _mockRepository.Setup(r => r.EmailJaRegistradoAsync(clienteCreateDto.Email, null))

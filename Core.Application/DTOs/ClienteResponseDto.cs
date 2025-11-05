@@ -64,4 +64,25 @@ public class ClienteResponseDto
     /// Indica se o cliente está ativo
     /// </summary>
     public bool Ativo { get; set; }
+
+    /// <summary>
+    /// Ranking de crédito do cliente (0-5)
+    /// </summary>
+    public int RankingCredito { get; set; }
+
+    /// <summary>
+    /// Score de crédito do cliente (0-1000)
+    /// </summary>
+    public int ScoreCredito { get; set; }
+
+    /// <summary>
+    /// Data da última atualização de ranking
+    /// </summary>
+    public DateTime? DataAtualizacaoRanking { get; set; }
+
+    /// <summary>
+    /// Indica se o cliente está apto a receber cartão de crédito
+    /// </summary>
+    public bool AptoParaCartaoCredito { get; set; }
 }
+

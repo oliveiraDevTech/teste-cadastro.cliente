@@ -46,16 +46,26 @@ RUN mkdir -p /app/logs && \
 RUN mkdir -p /app/data && \
     chmod -R 777 /app/data
 
+# Script para executar migrations e iniciar a aplicação
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "🔄 Iniciando aplicação com migrations automáticas..."\n\
+exec dotnet Driving.Api.dll' > /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
+
 # Variáveis de ambiente padrão
 ENV ASPNETCORE_ENVIRONMENT=Production \
     ASPNETCORE_URLS=http://+:5000 \
     ASPNETCORE_HTTP_PORT=5000 \
     ConnectionStrings__DefaultConnection="Data Source=/app/data/cliente.db;" \
-    JWT_SECRET="sua_chave_super_secreta_com_minimo_32_caracteres_para_producao" \
-    RABBITMQ_HOST=rabbitmq \
-    RABBITMQ_PORT=5672 \
-    RABBITMQ_USER=guest \
-    RABBITMQ_PASSWORD=guest
+    Jwt__Secret="sua_chave_super_secreta_com_minimo_32_caracteres_para_producao" \
+    Jwt__Issuer="CadastroClientesApi" \
+    Jwt__Audience="CadastroClientesApp" \
+    Jwt__ExpirationMinutes="60" \
+    RabbitMQ__HostName="rabbitmq" \
+    RabbitMQ__Port="5672" \
+    RabbitMQ__UserName="guest" \
+    RabbitMQ__Password="guest"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
@@ -65,4 +75,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 EXPOSE 5000
 
 # Entrypoint
-ENTRYPOINT ["dotnet", "Driving.Api.dll"]
+ENTRYPOINT ["/app/entrypoint.sh"]

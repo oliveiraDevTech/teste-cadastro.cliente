@@ -25,7 +25,11 @@ public class ClienteMapper
             Cep = cliente.Cep,
             DataCriacao = cliente.DataCriacao,
             DataAtualizacao = cliente.DataAtualizacao,
-            Ativo = cliente.Ativo
+            Ativo = cliente.Ativo,
+            RankingCredito = cliente.RankingCredito,
+            ScoreCredito = cliente.ScoreCredito,
+            DataAtualizacaoRanking = cliente.DataAtualizacaoRanking,
+            AptoParaCartaoCredito = cliente.AptoParaCartaoCredito
         };
     }
 
@@ -83,6 +87,15 @@ public class ClienteMapper
             updateDto.Estado,
             updateDto.Cep
         );
+
+        // Atualiza ranking e score se fornecidos
+        if (updateDto.RankingCredito.HasValue && updateDto.ScoreCredito.HasValue)
+        {
+            clienteExistente.AtualizarRankingCredito(
+                updateDto.RankingCredito.Value,
+                updateDto.ScoreCredito.Value,
+                "SISTEMA");
+        }
     }
 
     /// <summary>

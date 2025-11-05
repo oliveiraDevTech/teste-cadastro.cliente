@@ -28,6 +28,9 @@ public static class DependencyInjectionExtensions
             new AuthenticationService(jwtSecret, jwtIssuer, jwtAudience, jwtExpirationMinutes)
         );
 
+        // Registrar handlers de eventos
+        services.AddScoped<Handlers.AnaliseCartaoCreditoCompleteEventHandler>();
+
         return services;
     }
 }

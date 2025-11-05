@@ -44,4 +44,9 @@ public class RabbitMQSettings
     /// Delay entre tentativas em milissegundos
     /// </summary>
     public int RetryDelay { get; set; } = 1000;
+
+    /// <summary>
+    /// Configurações de nomes de filas
+    /// </summary>
+    public RabbitMQQueuesSettings Queues { get; set; } = new();
 }

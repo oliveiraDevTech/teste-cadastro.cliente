@@ -4,3 +4,6 @@ global using Core.Application.Interfaces.Services;
 
 // Driven
 global using Driven.SqlLite;
+
+// Configuration
+global using Microsoft.Extensions.Options;

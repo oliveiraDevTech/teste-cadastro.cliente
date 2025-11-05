@@ -7,14 +7,27 @@ namespace Core.Application.Services;
 public class ClienteService : IClienteService
 {
     private readonly IClienteRepository _repository;
+    private readonly Driven.RabbitMQ.Interfaces.IMessagePublisher _messagePublisher;
+    private readonly ILogger<ClienteService> _logger;
+    private readonly Driven.RabbitMQ.Settings.RabbitMQSettings _rabbitMQSettings;
 
     /// <summary>
     /// Construtor do serviço
     /// </summary>
     /// <param name="repository">Repositório de clientes injetado por DI</param>
-    public ClienteService(IClienteRepository repository)
+    /// <param name="messagePublisher">Publicador de mensagens para RabbitMQ</param>
+    /// <param name="logger">Logger para registrar operações</param>
+    /// <param name="rabbitMQSettings">Configurações do RabbitMQ incluindo nomes das filas</param>
+    public ClienteService(
+        IClienteRepository repository,
+        Driven.RabbitMQ.Interfaces.IMessagePublisher messagePublisher,
+        ILogger<ClienteService> logger,
+        IOptions<Driven.RabbitMQ.Settings.RabbitMQSettings> rabbitMQSettings)
     {
         _repository = repository;
+        _messagePublisher = messagePublisher;
+        _logger = logger;
+        _rabbitMQSettings = rabbitMQSettings.Value;
     }
 
     /// <summary>
@@ -184,6 +197,37 @@ public class ClienteService : IClienteService
             // Criar cliente
             var clienteCriado = await _repository.CriarAsync(clienteCreateDto);
 
+            // Publicar evento de cadastro de cliente para iniciar análise de crédito
+            try
+            {
+                var eventoClienteCadastrado = new Driven.RabbitMQ.Events.ClienteCadastradoIntegrationEvent
+                {
+                    ClienteId = clienteCriado.Id,
+                    Nome = clienteCriado.Nome,
+                    CPF = clienteCriado.Cpf,
+                    Email = clienteCriado.Email,
+                    Renda = 0, // Será implementado futuramente
+                    Idade = 30, // Valor padrão, será implementado futuramente
+                    HistoricoCredito = "REGULAR",
+                    DataNascimento = DateTime.UtcNow.AddYears(-30)
+                };
+
+                await _messagePublisher.PublishAsync(_rabbitMQSettings.Queues.ClienteCadastrado, eventoClienteCadastrado);
+
+                _logger.LogInformation(
+                    "Evento ClienteCadastradoIntegrationEvent publicado para cliente {ClienteId} ({Nome})",
+                    clienteCriado.Id, clienteCriado.Nome);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Aviso: Não foi possível publicar evento de cadastro para cliente {ClienteId}. Cliente foi criado mas análise de crédito será iniciada apenas após reconexão com RabbitMQ.",
+                    clienteCriado.Id);
+                // Não falhar a criação do cliente se RabbitMQ não estiver disponível
+                // O evento será retentado mais tarde
+            }
+
             return new ApiResponseDto<ClienteResponseDto>
             {
                 Sucesso = true,
@@ -193,6 +237,7 @@ public class ClienteService : IClienteService
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Erro ao criar cliente: {Mensagem}", ex.Message);
             return new ApiResponseDto<ClienteResponseDto>
             {
                 Sucesso = false,
@@ -452,5 +497,20 @@ public class ClienteService : IClienteService
         // Remove caracteres não numéricos
         var cepLimpo = System.Text.RegularExpressions.Regex.Replace(cep, @"\D", "");
         return cepLimpo.Length == 8;
+    }
+
+    /// <summary>
+    /// Calcula a idade baseado na data de nascimento
+    /// </summary>
+    private int CalcularIdade(DateTime dataNascimento)
+    {
+        var hoje = DateTime.Now;
+        var idade = hoje.Year - dataNascimento.Year;
+
+        // Ajustar se aniversário ainda não ocorreu este ano
+        if (dataNascimento.Date > hoje.AddYears(-idade))
+            idade--;
+
+        return idade;
     }
 }

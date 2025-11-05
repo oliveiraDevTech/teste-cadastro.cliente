@@ -17,3 +17,9 @@ global using Core.Application.Validators;
 
 // Mappers
 global using Core.Application.Mappers;
+
+// Logging
+global using Microsoft.Extensions.Logging;
+
+// Configuration
+global using Microsoft.Extensions.Options;

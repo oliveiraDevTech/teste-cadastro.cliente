@@ -8,11 +8,11 @@ public class ClienteCreateDtoBuilder
     private string _nome = "João Silva";
     private string _email = "joao@example.com";
     private string _telefone = "11987654321";
-    private string _cpf = "123.456.789-10";
+    private string _cpf = "52998224725"; // CPF válido
     private string _endereco = "Rua das Flores, 123";
     private string _cidade = "São Paulo";
     private string _estado = "SP";
-    private string _cep = "01234-567";
+    private string _cep = "01234567"; // CEP sem formatação
 
     public ClienteCreateDtoBuilder WithNome(string nome)
     {

@@ -44,4 +44,15 @@ public class ClienteUpdateDto
     /// CEP do cliente (formato: XXXXX-XXX)
     /// </summary>
     public string Cep { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Ranking de crédito do cliente (0-5)
+    /// </summary>
+    public int? RankingCredito { get; set; }
+
+    /// <summary>
+    /// Score de crédito do cliente (0-1000)
+    /// </summary>
+    public int? ScoreCredito { get; set; }
 }
+

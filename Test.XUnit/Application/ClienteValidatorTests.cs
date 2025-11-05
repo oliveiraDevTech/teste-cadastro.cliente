@@ -21,11 +21,11 @@ public class ClienteCreateDtoValidatorTests
             Nome = "João Silva",
             Email = "joao@example.com",
             Telefone = "11987654321",
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = "SP",
-            Cep = "01234-567"
+            Cep = "01234567"
         };
 
         // Act
@@ -45,11 +45,11 @@ public class ClienteCreateDtoValidatorTests
             Nome = "",
             Email = "joao@example.com",
             Telefone = "11987654321",
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = "SP",
-            Cep = "01234-567"
+            Cep = "01234567"
         };
 
         // Act
@@ -72,11 +72,11 @@ public class ClienteCreateDtoValidatorTests
             Nome = nome,
             Email = "joao@example.com",
             Telefone = "11987654321",
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = "SP",
-            Cep = "01234-567"
+            Cep = "01234567"
         };
 
         // Act
@@ -98,11 +98,11 @@ public class ClienteCreateDtoValidatorTests
             Nome = "João Silva",
             Email = email,
             Telefone = "11987654321",
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = "SP",
-            Cep = "01234-567"
+            Cep = "01234567"
         };
 
         // Act
@@ -124,11 +124,11 @@ public class ClienteCreateDtoValidatorTests
             Nome = "João Silva",
             Email = "joao@example.com",
             Telefone = telefone,
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = "SP",
-            Cep = "01234-567"
+            Cep = "01234567"
         };
 
         // Act
@@ -153,7 +153,7 @@ public class ClienteCreateDtoValidatorTests
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = "SP",
-            Cep = "01234-567"
+            Cep = "01234567"
         };
 
         // Act
@@ -174,11 +174,11 @@ public class ClienteCreateDtoValidatorTests
             Nome = "João Silva",
             Email = "joao@example.com",
             Telefone = "11987654321",
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = endereco,
             Cidade = "São Paulo",
             Estado = "SP",
-            Cep = "01234-567"
+            Cep = "01234567"
         };
 
         // Act
@@ -199,11 +199,11 @@ public class ClienteCreateDtoValidatorTests
             Nome = "João Silva",
             Email = "joao@example.com",
             Telefone = "11987654321",
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = estado,
-            Cep = "01234-567"
+            Cep = "01234567"
         };
 
         // Act
@@ -225,11 +225,11 @@ public class ClienteCreateDtoValidatorTests
             Nome = "João Silva",
             Email = "joao@example.com",
             Telefone = "11987654321",
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = estado,
-            Cep = "01234-567"
+            Cep = "01234567"
         };
 
         // Act
@@ -240,8 +240,7 @@ public class ClienteCreateDtoValidatorTests
     }
 
     [Theory]
-    [InlineData("01234-567")] // Válido com hífen
-    [InlineData("01234567")] // Válido sem hífen
+    [InlineData("01234567")] // Válido sem hífen (8 dígitos)
     public void Validar_ComCepValido_DevePassar(string cep)
     {
         // Arrange
@@ -250,7 +249,7 @@ public class ClienteCreateDtoValidatorTests
             Nome = "João Silva",
             Email = "joao@example.com",
             Telefone = "11987654321",
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = "SP",
@@ -275,7 +274,7 @@ public class ClienteCreateDtoValidatorTests
             Nome = "João Silva",
             Email = "joao@example.com",
             Telefone = "11987654321",
-            Cpf = "123.456.789-10",
+            Cpf = "52998224725",
             Endereco = "Rua das Flores, 123",
             Cidade = "São Paulo",
             Estado = "SP",

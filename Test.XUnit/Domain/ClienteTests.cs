@@ -12,11 +12,11 @@ public class ClienteTests
         var nome = "João Silva";
         var email = "joao@example.com";
         var telefone = "11987654321";
-        var cpf = "123.456.789-10";
+        var cpf = "52998224725"; // CPF válido
         var endereco = "Rua das Flores, 123";
         var cidade = "São Paulo";
         var estado = "SP";
-        var cep = "01234-567";
+        var cep = "01234567"; // CEP sem formatação
 
         // Act
         var cliente = Cliente.Criar(nome, email, telefone, cpf, endereco, cidade, estado, cep);
@@ -41,7 +41,7 @@ public class ClienteTests
     {
         // Arrange
         var cliente = Cliente.Criar("João Silva", "joao@example.com", "11987654321",
-            "123.456.789-10", "Rua das Flores, 123", "São Paulo", "SP", "01234-567");
+            "52998224725", "Rua das Flores, 123", "São Paulo", "SP", "01234567");
 
         var novoNome = "João Silva Santos";
         var novoEmail = "joao.santos@example.com";
@@ -49,7 +49,7 @@ public class ClienteTests
         var novoEndereco = "Avenida Paulista, 1000";
         var novaCidade = "São Paulo";
         var novoEstado = "SP";
-        var novoCep = "01310-100";
+        var novoCep = "01310100"; // CEP sem formatação
 
         // Act
         cliente.Atualizar(novoNome, novoEmail, novoTelefone, novoEndereco,
@@ -71,7 +71,7 @@ public class ClienteTests
     {
         // Arrange
         var cliente = Cliente.Criar("João Silva", "joao@example.com", "11987654321",
-            "123.456.789-10", "Rua das Flores, 123", "São Paulo", "SP", "01234-567");
+            "52998224725", "Rua das Flores, 123", "São Paulo", "SP", "01234567");
 
         // Act
         cliente.Desativar();
@@ -86,7 +86,7 @@ public class ClienteTests
     {
         // Arrange
         var cliente = Cliente.Criar("João Silva", "joao@example.com", "11987654321",
-            "123.456.789-10", "Rua das Flores, 123", "São Paulo", "SP", "01234-567");
+            "52998224725", "Rua das Flores, 123", "São Paulo", "SP", "01234567");
         cliente.Desativar();
 
         // Act
@@ -101,7 +101,7 @@ public class ClienteTests
     {
         // Arrange & Act
         var cliente = Cliente.Criar("João Silva", "joao@example.com", "11987654321",
-            "123.456.789-10", "Rua das Flores, 123", "São Paulo", "SP", "01234-567");
+            "52998224725", "Rua das Flores, 123", "São Paulo", "SP", "01234567");
 
         // Assert
         cliente.Should().BeAssignableTo<BaseEntity>();
@@ -110,3 +110,4 @@ public class ClienteTests
         cliente.Ativo.Should().BeTrue();
     }
 }
+

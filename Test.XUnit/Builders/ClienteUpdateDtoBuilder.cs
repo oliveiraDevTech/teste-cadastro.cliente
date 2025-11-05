@@ -12,7 +12,7 @@ public class ClienteUpdateDtoBuilder
     private string _endereco = "Rua das Flores, 123";
     private string _cidade = "São Paulo";
     private string _estado = "SP";
-    private string _cep = "01234-567";
+    private string _cep = "01234567"; // CEP sem formatação
 
     public ClienteUpdateDtoBuilder WithId(Guid id)
     {
