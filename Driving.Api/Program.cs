@@ -148,6 +148,9 @@ else
 
 app.UseCors("AllowAll");
 
+// ========== MAPEAR HEALTH CHECK ENDPOINT ==========
+app.MapHealthChecks("/api/health");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
