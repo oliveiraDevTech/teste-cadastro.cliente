@@ -161,15 +161,15 @@ try
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        // Aplicar migrations pendentes automaticamente
-        Console.WriteLine("🔄 Aplicando migrations do banco de dados...");
-        dbContext.Database.Migrate();
-        Console.WriteLine("✅ Migrations aplicadas com sucesso!");
+        // Criar banco de dados automaticamente
+        Console.WriteLine("🔄 Criando banco de dados...");
+        dbContext.Database.EnsureCreated();
+        Console.WriteLine("✅ Banco de dados criado com sucesso!");
     }
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"❌ Erro ao aplicar migrations: {ex.Message}");
+    Console.WriteLine($"❌ Erro ao criar banco de dados: {ex.Message}");
     throw;
 }
 
