@@ -133,7 +133,7 @@ app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Cadastro de Clientes API v1");
-    options.RoutePrefix = "";
+    options.RoutePrefix = "swagger";
     options.DocumentTitle = "Cadastro de Clientes API";
 });
 
