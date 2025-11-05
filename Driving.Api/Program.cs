@@ -122,6 +122,9 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 // Injeção de dependências - RabbitMQ (Mensageria)
 builder.Services.AddRabbitMQServices(builder.Configuration);
 
+// Adicionar Health Checks
+builder.Services.AddHealthChecks();
+
 // ========== CONSTRUIR APLICAÇÃO ==========
 
 var app = builder.Build();
