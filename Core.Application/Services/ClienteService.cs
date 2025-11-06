@@ -200,23 +200,35 @@ public class ClienteService : IClienteService
             // Publicar evento de cadastro de cliente para iniciar análise de crédito
             try
             {
+                // Calcular idade se data de nascimento foi fornecida
+                var idade = 30; // Valor padrão
+                var dataNascimento = DateTime.UtcNow.AddYears(-30); // Valor padrão
+                
+                if (clienteCreateDto.DataNascimento.HasValue)
+                {
+                    dataNascimento = clienteCreateDto.DataNascimento.Value;
+                    var hoje = DateTime.UtcNow;
+                    idade = hoje.Year - dataNascimento.Year;
+                    if (dataNascimento.Date > hoje.AddYears(-idade)) idade--;
+                }
+
                 var eventoClienteCadastrado = new Driven.RabbitMQ.Events.ClienteCadastradoIntegrationEvent
                 {
                     ClienteId = clienteCriado.Id,
                     Nome = clienteCriado.Nome,
                     CPF = clienteCriado.Cpf,
                     Email = clienteCriado.Email,
-                    Renda = 0, // Será implementado futuramente
-                    Idade = 30, // Valor padrão, será implementado futuramente
-                    HistoricoCredito = "REGULAR",
-                    DataNascimento = DateTime.UtcNow.AddYears(-30)
+                    Renda = clienteCreateDto.RendaMensal ?? 0,
+                    Idade = idade,
+                    HistoricoCredito = clienteCreateDto.HistoricoCredito ?? "REGULAR",
+                    DataNascimento = dataNascimento
                 };
 
                 await _messagePublisher.PublishAsync(_rabbitMQSettings.Queues.ClienteCadastrado, eventoClienteCadastrado);
 
                 _logger.LogInformation(
-                    "Evento ClienteCadastradoIntegrationEvent publicado para cliente {ClienteId} ({Nome})",
-                    clienteCriado.Id, clienteCriado.Nome);
+                    "Evento ClienteCadastradoIntegrationEvent publicado para cliente {ClienteId} ({Nome}) - Renda: {Renda}, Idade: {Idade}",
+                    clienteCriado.Id, clienteCriado.Nome, eventoClienteCadastrado.Renda, eventoClienteCadastrado.Idade);
             }
             catch (Exception ex)
             {

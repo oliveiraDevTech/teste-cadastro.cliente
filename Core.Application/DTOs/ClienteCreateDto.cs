@@ -44,4 +44,19 @@ public class ClienteCreateDto
     /// CEP do cliente (formato: XXXXX-XXX)
     /// </summary>
     public string Cep { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Data de nascimento do cliente
+    /// </summary>
+    public DateTime? DataNascimento { get; set; }
+
+    /// <summary>
+    /// Renda mensal do cliente
+    /// </summary>
+    public decimal? RendaMensal { get; set; }
+
+    /// <summary>
+    /// Histórico de crédito: BOM, REGULAR, RUIM
+    /// </summary>
+    public string? HistoricoCredito { get; set; }
 }

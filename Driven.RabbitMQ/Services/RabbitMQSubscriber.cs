@@ -42,20 +42,40 @@ public class RabbitMQSubscriber : IMessageSubscriber
             // Define o handler para processar mensagens
             consumer.Received += async (model, ea) =>
             {
+                var messageJson = string.Empty;
                 try
                 {
                     var body = ea.Body.ToArray();
-                    var messageJson = Encoding.UTF8.GetString(body);
+                    messageJson = Encoding.UTF8.GetString(body);
+                    
+                    Console.WriteLine($"[RabbitMQ] Mensagem recebida da fila '{queueName}': {messageJson.Substring(0, Math.Min(200, messageJson.Length))}...");
+                    
                     var message = JsonSerializer.Deserialize<T>(messageJson);
 
                     if (message != null)
                     {
+                        Console.WriteLine($"[RabbitMQ] Mensagem deserializada com sucesso. Processando...");
                         await handler(message);
                         _messageBus.Channel.BasicAck(ea.DeliveryTag, false);
+                        Console.WriteLine($"[RabbitMQ] Mensagem processada e confirmada (ACK)");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[RabbitMQ] ERRO: Mensagem deserializada como null");
+                        _messageBus.Channel.BasicNack(ea.DeliveryTag, false, false);
                     }
                 }
-                catch (Exception ex)
+                catch (JsonException jsonEx)
                 {
+                    Console.WriteLine($"[RabbitMQ] ERRO DE JSON: {jsonEx.Message}");
+                    Console.WriteLine($"[RabbitMQ] JSON recebido: {messageJson}");
+                    // Rejeita a mensagem e NÃO recoloca na fila (mensagem inválida)
+                    _messageBus.Channel.BasicNack(ea.DeliveryTag, false, false);
+                }
+                catch (Exception ex) 
+                {
+                    Console.WriteLine($"[RabbitMQ] ERRO AO PROCESSAR: {ex.GetType().Name}: {ex.Message}");
+                    Console.WriteLine($"[RabbitMQ] StackTrace: {ex.StackTrace}");
                     // Rejeita a mensagem e a recoloca na fila
                     _messageBus.Channel.BasicNack(ea.DeliveryTag, false, true);
                     throw;
@@ -114,21 +134,39 @@ public class RabbitMQSubscriber : IMessageSubscriber
             // Define o handler para processar mensagens
             consumer.Received += async (model, ea) =>
             {
+                var messageJson = string.Empty;
                 try
                 {
                     var body = ea.Body.ToArray();
-                    var messageJson = Encoding.UTF8.GetString(body);
+                    messageJson = Encoding.UTF8.GetString(body);
+                    
+                    Console.WriteLine($"[RabbitMQ] Mensagem recebida da exchange '{exchangeName}': {messageJson.Substring(0, Math.Min(200, messageJson.Length))}...");
+                    
                     var message = JsonSerializer.Deserialize<T>(messageJson);
 
                     if (message != null)
                     {
+                        Console.WriteLine($"[RabbitMQ] Mensagem deserializada com sucesso. Processando...");
                         await handler(message);
                         _messageBus.Channel.BasicAck(ea.DeliveryTag, false);
+                        Console.WriteLine($"[RabbitMQ] Mensagem processada e confirmada (ACK)");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[RabbitMQ] ERRO: Mensagem deserializada como null");
+                        _messageBus.Channel.BasicNack(ea.DeliveryTag, false, false);
                     }
                 }
-                catch (Exception ex)
+                catch (JsonException jsonEx)
                 {
-                    // Rejeita a mensagem e a recoloca na fila
+                    Console.WriteLine($"[RabbitMQ] ERRO DE JSON: {jsonEx.Message}");
+                    Console.WriteLine($"[RabbitMQ] JSON recebido: {messageJson}");
+                    _messageBus.Channel.BasicNack(ea.DeliveryTag, false, false);
+                }
+                catch (Exception ex) 
+                {
+                    Console.WriteLine($"[RabbitMQ] ERRO AO PROCESSAR: {ex.GetType().Name}: {ex.Message}");
+                    Console.WriteLine($"[RabbitMQ] StackTrace: {ex.StackTrace}");
                     _messageBus.Channel.BasicNack(ea.DeliveryTag, false, true);
                     throw;
                 }
