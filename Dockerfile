@@ -33,6 +33,7 @@ WORKDIR /app
 # Instalar ferramentas úteis
 RUN apt-get update && apt-get install -y \
     curl \
+    sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar artefatos publicados
