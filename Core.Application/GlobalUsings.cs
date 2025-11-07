@@ -23,3 +23,7 @@ global using Microsoft.Extensions.Logging;
 
 // Configuration
 global using Microsoft.Extensions.Options;
+
+// HTTP Client
+global using System.Net.Http;
+global using System.Net.Http.Json;
