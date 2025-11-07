@@ -582,7 +582,7 @@ public class ClienteService : IClienteService
             decimal limitePorCartao = limiteTotal / quantidadeCartoes;
 
             // Criar evento de pedido de emissão
-            var pedidoEmissaoCartao = new
+            var pedidoEmissaoCartao = new PedidoEmissaoCartaoIntegrationEvent
             {
                 ClienteId = cliente.Id,
                 PropostaId = Guid.NewGuid(), // Gerar ID único para proposta
@@ -592,10 +592,10 @@ public class ClienteService : IClienteService
                 LimiteCreditoPorCartao = limitePorCartao,
                 CorrelacaoId = Guid.NewGuid().ToString(),
                 ChaveIdempotencia = $"{cliente.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}",
-                Entrega = new
+                Entrega = new EntregaCartaoInfo
                 {
                     TipoEntrega = "CORREIOS_SEDEX",
-                    EnderecoEntrega = new
+                    EnderecoEntrega = new EnderecoEntregaInfo
                     {
                         Logradouro = cliente.Endereco,
                         Cidade = cliente.Cidade,

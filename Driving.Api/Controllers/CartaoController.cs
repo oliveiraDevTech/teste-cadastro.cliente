@@ -189,11 +189,25 @@ public class CartaoController : ControllerBase
             var eventoEmissao = new PedidoEmissaoCartaoIntegrationEvent
             {
                 ClienteId = cliente.Id,
-                Nome = cliente.Nome,
-                CPF = cliente.Cpf,
-                Email = cliente.Email,
-                ScoreCredito = cliente.ScoreCredito,
-                DataPedido = DateTime.UtcNow
+                PropostaId = Guid.NewGuid(),
+                ContaId = Guid.NewGuid(),
+                CodigoProduto = "CREDIT_CARD_PLATINUM",
+                QuantidadeCartoesEmitir = cliente.ScoreCredito >= 501 ? 2 : 1,
+                LimiteCreditoPorCartao = (cliente.ScoreCredito * 10) / (cliente.ScoreCredito >= 501 ? 2 : 1),
+                CorrelacaoId = Guid.NewGuid().ToString(),
+                ChaveIdempotencia = $"{cliente.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}",
+                Entrega = new EntregaCartaoInfo
+                {
+                    TipoEntrega = "CORREIOS_SEDEX",
+                    EnderecoEntrega = new EnderecoEntregaInfo
+                    {
+                        Logradouro = cliente.Endereco,
+                        Cidade = cliente.Cidade,
+                        Estado = cliente.Estado,
+                        Cep = cliente.Cep
+                    }
+                },
+                DataSolicitacao = DateTime.UtcNow
             };
 
             await _messagePublisher.PublishAsync(_rabbitMQSettings.Queues.CartaoEmissaoPedido, eventoEmissao);

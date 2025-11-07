@@ -9,6 +9,7 @@ public class ClienteServiceTests
     private readonly Mock<Driven.RabbitMQ.Interfaces.IMessagePublisher> _mockMessagePublisher;
     private readonly Mock<Microsoft.Extensions.Logging.ILogger<ClienteService>> _mockLogger;
     private readonly Mock<Microsoft.Extensions.Options.IOptions<Driven.RabbitMQ.Settings.RabbitMQSettings>> _mockRabbitMQSettings;
+    private readonly HttpClient _httpClient;
     private readonly ClienteService _service;
 
     public ClienteServiceTests()
@@ -30,7 +31,10 @@ public class ClienteServiceTests
         _mockRabbitMQSettings = new Mock<Microsoft.Extensions.Options.IOptions<Driven.RabbitMQ.Settings.RabbitMQSettings>>();
         _mockRabbitMQSettings.Setup(m => m.Value).Returns(rabbitMQSettings);
         
-        _service = new ClienteService(_mockRepository.Object, _mockMessagePublisher.Object, _mockLogger.Object, _mockRabbitMQSettings.Object);
+        // Configurar HttpClient para testes
+        _httpClient = new HttpClient();
+        
+        _service = new ClienteService(_mockRepository.Object, _mockMessagePublisher.Object, _mockLogger.Object, _mockRabbitMQSettings.Object, _httpClient);
     }
 
     #region ObterPorIdAsync Tests

@@ -27,3 +27,6 @@ global using Microsoft.Extensions.Options;
 // HTTP Client
 global using System.Net.Http;
 global using System.Net.Http.Json;
+
+// RabbitMQ Events
+global using Driven.RabbitMQ.Events;
