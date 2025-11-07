@@ -222,7 +222,7 @@ try
         // ========== INICIALIZAR CONSUMIDORES DE EVENTOS ==========
 
         var subscriber = app.Services.GetRequiredService<IMessageSubscriber>();
-        var analiseCreditoHandler = app.Services.GetRequiredService<Core.Application.Handlers.AnaliseCartaoCreditoCompleteEventHandler>();
+        var serviceScopeFactory = app.Services.GetRequiredService<IServiceScopeFactory>();
         var logger = app.Services.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Program>>();
         
         // Obter configurações do RabbitMQ incluindo nomes das filas
@@ -236,6 +236,8 @@ try
                 queueName: queueName,
                 handler: async (evento) =>
                 {
+                    using var scope = serviceScopeFactory.CreateScope();
+                    var analiseCreditoHandler = scope.ServiceProvider.GetRequiredService<Core.Application.Handlers.AnaliseCartaoCreditoCompleteEventHandler>();
                     logger.LogInformation("Evento AnaliseCartaoCreditoCompleteEvent recebido para cliente {ClienteId}", evento.ClienteId);
                     await analiseCreditoHandler.HandleAsync(evento);
                 });

@@ -34,7 +34,7 @@ public static class DependencyInjectionExtensions
 
         // Registra o publisher e subscriber como Scoped
         services.AddScoped<IMessagePublisher, RabbitMQPublisher>();
-        services.AddScoped<IMessageSubscriber, RabbitMQSubscriber>();
+        services.AddSingleton<IMessageSubscriber, RabbitMQSubscriber>();
 
         return services;
     }
