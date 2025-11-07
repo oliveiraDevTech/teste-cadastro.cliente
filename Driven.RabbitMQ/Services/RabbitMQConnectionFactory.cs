@@ -41,8 +41,7 @@ public class RabbitMQConnectionFactory : IMessageBus
                 VirtualHost = _settings.VirtualHost,
                 RequestedConnectionTimeout = TimeSpan.FromMilliseconds(_settings.ConnectionTimeout),
                 AutomaticRecoveryEnabled = true,
-                NetworkRecoveryInterval = TimeSpan.FromSeconds(10),
-                DispatchConsumersAsync = true  // CRÍTICO: Necessário para AsyncEventingBasicConsumer funcionar
+                NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
             };
 
             _connection = factory.CreateConnection();

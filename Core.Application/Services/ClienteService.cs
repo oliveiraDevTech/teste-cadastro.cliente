@@ -525,4 +525,244 @@ public class ClienteService : IClienteService
 
         return idade;
     }
+
+    /// <summary>
+    /// Solicita emissão de cartão de crédito para o cliente
+    /// Publica evento na fila cartao.emissao.pedido
+    /// </summary>
+    public async Task<ApiResponseDto<object>> SolicitarEmissaoCartaoAsync(Guid clienteId)
+    {
+        try
+        {
+            if (clienteId == Guid.Empty)
+            {
+                return new ApiResponseDto<object>
+                {
+                    Sucesso = false,
+                    Mensagem = "ID do cliente é inválido",
+                    Erros = new List<string> { "ID não pode estar vazio" }
+                };
+            }
+
+            // Buscar cliente
+            var cliente = await _repository.ObterPorIdAsync(clienteId);
+
+            if (cliente == null)
+            {
+                return new ApiResponseDto<object>
+                {
+                    Sucesso = false,
+                    Mensagem = "Cliente não encontrado",
+                    Erros = new List<string> { "O cliente não existe no sistema" }
+                };
+            }
+
+            // Verificar se cliente está apto
+            if (!cliente.AptoParaCartaoCredito || cliente.ScoreCredito < 501)
+            {
+                return new ApiResponseDto<object>
+                {
+                    Sucesso = false,
+                    Mensagem = "Cliente não está apto para emissão de cartão",
+                    Erros = new List<string> 
+                    { 
+                        $"Cliente precisa ter score mínimo de 501. Score atual: {cliente.ScoreCredito}",
+                        "Realize uma análise de crédito antes de solicitar cartão"
+                    }
+                };
+            }
+
+            // Determinar quantidade de cartões baseado no score
+            int quantidadeCartoes = cliente.ScoreCredito >= 501 ? 2 : 1;
+            decimal limiteTotal = cliente.ScoreCredito * 10; // Score * 10 = limite
+            decimal limitePorCartao = limiteTotal / quantidadeCartoes;
+
+            // Criar evento de pedido de emissão
+            var pedidoEmissaoCartao = new
+            {
+                ClienteId = cliente.Id,
+                PropostaId = Guid.NewGuid(), // Gerar ID único para proposta
+                ContaId = Guid.NewGuid(), // TODO: Integrar com serviço de contas
+                CodigoProduto = "CREDIT_CARD_PLATINUM",
+                QuantidadeCartoesEmitir = quantidadeCartoes,
+                LimiteCreditoPorCartao = limitePorCartao,
+                CorrelacaoId = Guid.NewGuid().ToString(),
+                ChaveIdempotencia = $"{cliente.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}",
+                Entrega = new
+                {
+                    TipoEntrega = "CORREIOS_SEDEX",
+                    EnderecoEntrega = new
+                    {
+                        Logradouro = cliente.Endereco,
+                        Cidade = cliente.Cidade,
+                        Estado = cliente.Estado,
+                        Cep = cliente.Cep
+                    }
+                },
+                DataSolicitacao = DateTime.UtcNow
+            };
+
+            // Publicar na fila cartao.emissao.pedido
+            await _messagePublisher.PublishAsync(
+                _rabbitMQSettings.Queues.CartaoEmissaoPedido,
+                pedidoEmissaoCartao
+            );
+
+            _logger.LogInformation(
+                "Pedido de emissão de cartão publicado para cliente {ClienteId}. Quantidade: {Quantidade}, Limite por cartão: {Limite}",
+                cliente.Id, quantidadeCartoes, limitePorCartao
+            );
+
+            return new ApiResponseDto<object>
+            {
+                Sucesso = true,
+                Mensagem = "Solicitação de cartão enviada para processamento",
+                Dados = new
+                {
+                    ClienteId = cliente.Id,
+                    Nome = cliente.Nome,
+                    ScoreCredito = cliente.ScoreCredito,
+                    QuantidadeCartoes = quantidadeCartoes,
+                    LimitePorCartao = limitePorCartao,
+                    LimiteTotal = limiteTotal,
+                    Status = "EM_PROCESSAMENTO",
+                    DataSolicitacao = DateTime.UtcNow
+                }
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao solicitar emissão de cartão para cliente {ClienteId}", clienteId);
+            return new ApiResponseDto<object>
+            {
+                Sucesso = false,
+                Mensagem = "Erro ao solicitar emissão de cartão",
+                Erros = new List<string> { ex.Message }
+            };
+        }
+    }
+
+    /// <summary>
+    /// Obtém o status da emissão de cartão do cliente
+    /// </summary>
+    public async Task<ApiResponseDto<object>> ObterStatusEmissaoCartaoAsync(Guid clienteId)
+    {
+        try
+        {
+            if (clienteId == Guid.Empty)
+            {
+                return new ApiResponseDto<object>
+                {
+                    Sucesso = false,
+                    Mensagem = "ID do cliente é inválido",
+                    Erros = new List<string> { "ID não pode estar vazio" }
+                };
+            }
+
+            var cliente = await _repository.ObterPorIdAsync(clienteId);
+
+            if (cliente == null)
+            {
+                return new ApiResponseDto<object>
+                {
+                    Sucesso = false,
+                    Mensagem = "Cliente não encontrado",
+                    Erros = new List<string> { "O cliente não existe no sistema" }
+                };
+            }
+
+            // TODO: Consultar serviço de emissão de cartões para obter status real
+            // Por enquanto, retorna baseado no score do cliente
+
+            var status = new
+            {
+                ClienteId = cliente.Id,
+                Nome = cliente.Nome,
+                AptoParaCartao = cliente.AptoParaCartaoCredito,
+                ScoreCredito = cliente.ScoreCredito,
+                RankingCredito = cliente.RankingCredito,
+                StatusEmissao = cliente.AptoParaCartaoCredito && cliente.ScoreCredito >= 501 
+                    ? "APTO_PARA_SOLICITAR" 
+                    : "NAO_APTO",
+                QuantidadeCartoesElegiveis = cliente.ScoreCredito >= 501 ? 2 : 0,
+                DataUltimaAnalise = cliente.DataAtualizacaoRanking,
+                Mensagem = cliente.AptoParaCartaoCredito && cliente.ScoreCredito >= 501
+                    ? "Cliente apto para solicitar emissão de cartão"
+                    : "Cliente não possui score mínimo para emissão de cartão"
+            };
+
+            return new ApiResponseDto<object>
+            {
+                Sucesso = true,
+                Mensagem = "Status de emissão obtido com sucesso",
+                Dados = status
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao obter status de emissão para cliente {ClienteId}", clienteId);
+            return new ApiResponseDto<object>
+            {
+                Sucesso = false,
+                Mensagem = "Erro ao obter status de emissão",
+                Erros = new List<string> { ex.Message }
+            };
+        }
+    }
+
+    /// <summary>
+    /// Lista todos os cartões de crédito do cliente
+    /// Consulta o microserviço de emissão de cartões
+    /// </summary>
+    public async Task<ApiResponseDto<List<object>>> ObterCartoesClienteAsync(Guid clienteId)
+    {
+        try
+        {
+            if (clienteId == Guid.Empty)
+            {
+                return new ApiResponseDto<List<object>>
+                {
+                    Sucesso = false,
+                    Mensagem = "ID do cliente é inválido",
+                    Erros = new List<string> { "ID não pode estar vazio" }
+                };
+            }
+
+            var cliente = await _repository.ObterPorIdAsync(clienteId);
+
+            if (cliente == null)
+            {
+                return new ApiResponseDto<List<object>>
+                {
+                    Sucesso = false,
+                    Mensagem = "Cliente não encontrado",
+                    Erros = new List<string> { "O cliente não existe no sistema" }
+                };
+            }
+
+            // TODO: Fazer chamada HTTP para o serviço de emissão de cartões
+            // GET http://emissao-cartao:5001/api/v1/Cards/cliente/{clienteId}
+            
+            // Por enquanto, retorna lista vazia com informação
+            _logger.LogInformation("Consultando cartões do cliente {ClienteId}", clienteId);
+
+            return new ApiResponseDto<List<object>>
+            {
+                Sucesso = true,
+                Mensagem = "Nenhum cartão encontrado para este cliente",
+                Dados = new List<object>(),
+                Timestamp = DateTime.UtcNow
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao listar cartões do cliente {ClienteId}", clienteId);
+            return new ApiResponseDto<List<object>>
+            {
+                Sucesso = false,
+                Mensagem = "Erro ao listar cartões",
+                Erros = new List<string> { ex.Message }
+            };
+        }
+    }
 }

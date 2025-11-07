@@ -203,4 +203,85 @@ public class ClientesController : ControllerBase
 
         return Ok(resultado);
     }
+
+    /// <summary>
+    /// Solicita emissão de cartão de crédito para o cliente
+    /// Cliente deve estar apto (score >= 501) para solicitar
+    /// </summary>
+    /// <param name="id">ID do cliente</param>
+    /// <returns>Confirmação da solicitação</returns>
+    /// <response code="202">Solicitação aceita e enviada para processamento</response>
+    /// <response code="400">Cliente não está apto ou dados inválidos</response>
+    /// <response code="404">Cliente não encontrado</response>
+    /// <response code="401">Não autorizado</response>
+    [HttpPost("{id}/SolicitarCartao")]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status202Accepted)]
+    [ProducesResponseType(typeof(ApiResponseDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponseDto), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> SolicitarCartao([FromRoute] Guid id)
+    {
+        var resultado = await _clienteService.SolicitarEmissaoCartaoAsync(id);
+
+        if (!resultado.Sucesso)
+        {
+            if (resultado.Erros.Any(e => e.Contains("não encontrado")))
+                return NotFound(resultado);
+            return BadRequest(resultado);
+        }
+
+        return Accepted(resultado);
+    }
+
+    /// <summary>
+    /// Consulta o status da emissão de cartão do cliente
+    /// </summary>
+    /// <param name="id">ID do cliente</param>
+    /// <returns>Status da solicitação de cartão</returns>
+    /// <response code="200">Status obtido com sucesso</response>
+    /// <response code="404">Cliente não encontrado</response>
+    /// <response code="401">Não autorizado</response>
+    [HttpGet("{id}/StatusEmissao")]
+    [ProducesResponseType(typeof(ApiResponseDto<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseDto), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ObterStatusEmissao([FromRoute] Guid id)
+    {
+        var resultado = await _clienteService.ObterStatusEmissaoCartaoAsync(id);
+
+        if (!resultado.Sucesso)
+        {
+            if (resultado.Erros.Any(e => e.Contains("não encontrado")))
+                return NotFound(resultado);
+            return BadRequest(resultado);
+        }
+
+        return Ok(resultado);
+    }
+
+    /// <summary>
+    /// Lista todos os cartões de crédito do cliente
+    /// </summary>
+    /// <param name="id">ID do cliente</param>
+    /// <returns>Lista de cartões emitidos</returns>
+    /// <response code="200">Cartões obtidos com sucesso</response>
+    /// <response code="404">Cliente não encontrado</response>
+    /// <response code="401">Não autorizado</response>
+    [HttpGet("{id}/Cartoes")]
+    [ProducesResponseType(typeof(ApiResponseDto<List<object>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseDto), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ListarCartoes([FromRoute] Guid id)
+    {
+        var resultado = await _clienteService.ObterCartoesClienteAsync(id);
+
+        if (!resultado.Sucesso)
+        {
+            if (resultado.Erros.Any(e => e.Contains("não encontrado")))
+                return NotFound(resultado);
+            return BadRequest(resultado);
+        }
+
+        return Ok(resultado);
+    }
 }

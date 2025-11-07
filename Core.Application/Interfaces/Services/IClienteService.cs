@@ -50,4 +50,27 @@ public interface IClienteService
     /// <param name="id">ID do cliente a deletar</param>
     /// <returns>Resposta indicando sucesso ou erro na exclusão</returns>
     Task<ApiResponseDto> DeletarAsync(Guid id);
+
+    /// <summary>
+    /// Solicita emissão de cartão de crédito para o cliente
+    /// Publica evento na fila cartao.emissao.pedido para processamento
+    /// </summary>
+    /// <param name="clienteId">ID do cliente</param>
+    /// <returns>Resposta indicando se a solicitação foi aceita</returns>
+    Task<ApiResponseDto<object>> SolicitarEmissaoCartaoAsync(Guid clienteId);
+
+    /// <summary>
+    /// Obtém o status da emissão de cartão do cliente
+    /// </summary>
+    /// <param name="clienteId">ID do cliente</param>
+    /// <returns>Resposta com status da emissão</returns>
+    Task<ApiResponseDto<object>> ObterStatusEmissaoCartaoAsync(Guid clienteId);
+
+    /// <summary>
+    /// Lista todos os cartões de crédito do cliente
+    /// Consulta o microserviço de emissão de cartões
+    /// </summary>
+    /// <param name="clienteId">ID do cliente</param>
+    /// <returns>Resposta com lista de cartões</returns>
+    Task<ApiResponseDto<List<object>>> ObterCartoesClienteAsync(Guid clienteId);
 }
