@@ -10,6 +10,7 @@ public class ClienteService : IClienteService
     private readonly Driven.RabbitMQ.Interfaces.IMessagePublisher _messagePublisher;
     private readonly ILogger<ClienteService> _logger;
     private readonly Driven.RabbitMQ.Settings.RabbitMQSettings _rabbitMQSettings;
+    private readonly HttpClient _httpClient;
 
     /// <summary>
     /// Construtor do serviço
@@ -18,16 +19,19 @@ public class ClienteService : IClienteService
     /// <param name="messagePublisher">Publicador de mensagens para RabbitMQ</param>
     /// <param name="logger">Logger para registrar operações</param>
     /// <param name="rabbitMQSettings">Configurações do RabbitMQ incluindo nomes das filas</param>
+    /// <param name="httpClient">Cliente HTTP para comunicação com outros serviços</param>
     public ClienteService(
         IClienteRepository repository,
         Driven.RabbitMQ.Interfaces.IMessagePublisher messagePublisher,
         ILogger<ClienteService> logger,
-        IOptions<Driven.RabbitMQ.Settings.RabbitMQSettings> rabbitMQSettings)
+        IOptions<Driven.RabbitMQ.Settings.RabbitMQSettings> rabbitMQSettings,
+        HttpClient httpClient)
     {
         _repository = repository;
         _messagePublisher = messagePublisher;
         _logger = logger;
         _rabbitMQSettings = rabbitMQSettings.Value;
+        _httpClient = httpClient;
     }
 
     /// <summary>
@@ -740,19 +744,71 @@ public class ClienteService : IClienteService
                 };
             }
 
-            // TODO: Fazer chamada HTTP para o serviço de emissão de cartões
-            // GET http://emissao-cartao:5001/api/v1/Cards/cliente/{clienteId}
+            // Fazer chamada HTTP para o serviço de emissão de cartões
+            var emissaoCartaoUrl = Environment.GetEnvironmentVariable("EMISSAO_CARTAO_URL") ?? "http://emissao-cartao:5001";
+            var url = $"{emissaoCartaoUrl}/api/v1/Cards/cliente/{clienteId}";
             
-            // Por enquanto, retorna lista vazia com informação
-            _logger.LogInformation("Consultando cartões do cliente {ClienteId}", clienteId);
+            _logger.LogInformation("Consultando cartões do cliente {ClienteId} em {Url}", clienteId, url);
 
-            return new ApiResponseDto<List<object>>
+            try
             {
-                Sucesso = true,
-                Mensagem = "Nenhum cartão encontrado para este cliente",
-                Dados = new List<object>(),
-                Timestamp = DateTime.UtcNow
-            };
+                var response = await _httpClient.GetAsync(url);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var cartoes = await response.Content.ReadFromJsonAsync<List<CartaoDto>>();
+                    
+                    if (cartoes == null || cartoes.Count == 0)
+                    {
+                        return new ApiResponseDto<List<object>>
+                        {
+                            Sucesso = true,
+                            Mensagem = "Nenhum cartão encontrado para este cliente",
+                            Dados = new List<object>(),
+                            Timestamp = DateTime.UtcNow
+                        };
+                    }
+
+                    _logger.LogInformation(
+                        "Cartões retornados com sucesso. ClienteId={ClienteId}, Quantidade={Quantidade}",
+                        clienteId, cartoes.Count);
+
+                    return new ApiResponseDto<List<object>>
+                    {
+                        Sucesso = true,
+                        Mensagem = $"{cartoes.Count} cartão(ões) encontrado(s)",
+                        Dados = cartoes.Cast<object>().ToList(),
+                        Timestamp = DateTime.UtcNow
+                    };
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "Erro ao consultar cartões. ClienteId={ClienteId}, StatusCode={StatusCode}",
+                        clienteId, response.StatusCode);
+
+                    return new ApiResponseDto<List<object>>
+                    {
+                        Sucesso = false,
+                        Mensagem = "Erro ao consultar serviço de cartões",
+                        Erros = new List<string> { $"Status: {response.StatusCode}" },
+                        Timestamp = DateTime.UtcNow
+                    };
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                _logger.LogError(httpEx, 
+                    "Erro de conexão ao consultar cartões. ClienteId={ClienteId}, Url={Url}",
+                    clienteId, url);
+
+                return new ApiResponseDto<List<object>>
+                {
+                    Sucesso = false,
+                    Mensagem = "Serviço de cartões indisponível",
+                    Erros = new List<string> { "Não foi possível conectar ao serviço de emissão de cartões" }
+                };
+            }
         }
         catch (Exception ex)
         {

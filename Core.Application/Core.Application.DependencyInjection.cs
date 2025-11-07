@@ -22,6 +22,13 @@ public static class DependencyInjectionExtensions
         string jwtAudience = "CadastroClientesApp",
         int jwtExpirationMinutes = 60)
     {
+        // Registrar HttpClient para comunicação entre serviços
+        services.AddHttpClient<IClienteService, ClienteService>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+        });
+
         // Registrar os serviços de aplicação
         services.AddScoped<IClienteService, ClienteService>();
         services.AddScoped<IAuthenticationService>(provider =>
